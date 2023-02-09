@@ -1,0 +1,48 @@
+server:
+  port: 8989
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/sg_blog?characterEncoding=utf-8&serverTimezone=Asia/Shanghai
+    username: root
+    password: 990313
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  redis:
+    database: 0
+    host: localhost #指定redis所在的host
+#    password: 123321 #设置redis密码
+    port: 6379
+  #  文件上传的大小限制：multipart类型
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 5MB
+
+mybatis-plus:
+  configuration:
+    # 日志
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    db-config:
+      #      逻辑删除
+      logic-delete-field: delFlag
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+      #      主键自增
+      id-type: auto
+      table-prefix: sg_
+
+#oss:
+#  accessKey: r67rdcY1gHdFKG8FP0UirB0-FHOobwKRrd3sXLP6
+#  secretKey: IX_HFgPTCjx8rJMsVxE3EASp6nTGZRx_lU_kwsdI
+#  bucket: lingfei-blog
+#  domainName: http://rk54obks4.hn-bkt.clouddn.com/
+#oss:
+#  accessKey: r67rdcY1gHdFKG8FP0UirB0-FHOobwKRrd3sXLP6
+#  secretKey: IX_HFgPTCjx8rJMsVxE3EASp6nTGZRx_lU_kwsdI
+#  bucket: lingfei-blog
+#  domainName: http://rk54obks4.hn-bkt.clouddn.com/
+aliyun-oss:
+  accessKeyId: LTAI5t7MKWC5yA9dqyt8zfff
+  accessKeySecret: WraB64y1NiX23y7SALSV6aFy2rbNsN
+  bucketName: lingfei-blog
