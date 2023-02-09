@@ -12,6 +12,7 @@ import com.lingfei.mapper.CategoryMapper;
 import com.lingfei.service.CategoryService;
 import com.lingfei.utils.BeanCopyUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import com.lingfei.domain.entity.Category;
 import org.springframework.util.StringUtils;
@@ -28,6 +29,7 @@ import java.util.stream.Collectors;
  * @author makejava
  * @since 2022-12-02 12:42:02
  */
+@Lazy
 @Service("categoryService")
 public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> implements CategoryService {
 

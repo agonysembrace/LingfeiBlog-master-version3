@@ -6,7 +6,11 @@ spring:
     username: root
     password: 990313
     driver-class-name: com.mysql.cj.jdbc.Driver
-
+  main:
+    allow-circular-references: true
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
   redis:
     database: 0
     host: localhost #指定redis所在的host
