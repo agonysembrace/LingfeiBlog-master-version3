@@ -28,7 +28,6 @@ public class Article  {
 
     @TableField(exist = false)
     private String categoryName;
-
     //标题
     private String title;
     //文章内容
@@ -57,6 +56,7 @@ public class Article  {
     private Date updateTime;
     //删除标志（0代表未删除，1代表已删除）
     private Integer delFlag;
+
 
 
     public Article(Long id, Long viewCount) {

@@ -30,17 +30,20 @@ public class ArticleController {
 
     @GetMapping("/hotArticleList")
     public ResponseResult hotArticleList(){
+        articleService.updateViewCountToDB();
         ResponseResult result = articleService.hotArticle();
         return result;
     }
 
     @GetMapping("/articleList")
     public ResponseResult articleList(Integer pageNum,Integer pageSize,Long categoryId){
+        articleService.updateViewCountToDB();
         return articleService.articleList(pageNum,pageSize,categoryId);
     }
 
     @GetMapping("{id}")
     public ResponseResult getArticleDetail(@PathVariable("id")Long id){
+        articleService.updateViewCountToDB();
         return articleService.getArticleDetail(id);
     }
 

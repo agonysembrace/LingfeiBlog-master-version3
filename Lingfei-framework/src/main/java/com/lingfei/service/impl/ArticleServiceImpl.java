@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -73,7 +74,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         //状态是正式发布
         queryWrapper.eq(Article ::getStatus,SystemConstants.ARTICLE_STATUS_NORMAL);
         //对isTop要进行降序,置顶的文章就会被放在最上面了
-        queryWrapper.orderByDesc(Article :: getIsTop );
+        queryWrapper.orderByAsc(Article :: getIsTop);
 
         //进行分页
         Page<Article> page = new Page<>(pageNum,pageSize);
@@ -187,5 +188,19 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                 .map(tagId -> new ArticleTag(articleDto.getId(), tagId))
                 .collect(Collectors.toList());
         articleTagService.saveBatch(articleTags);
+    }
+
+    @Override
+    public void updateViewCountToDB() {
+        //获取redis中的浏览量:id为Long，viewCount为Long
+        Map<Object, Object> viewCountMap = redisUtil.hmget("article:viewCount");
+
+        //stream流返回Article，因对应要有相应的构造器！
+        List<Article> articles = viewCountMap.entrySet()
+                .stream()
+                .map(entry -> new Article(Long.valueOf((String)entry.getKey()), ((Integer) entry.getValue()).longValue()))
+                .collect(Collectors.toList());
+        //更新到数据库中
+        updateBatchById(articles);
     }
 }

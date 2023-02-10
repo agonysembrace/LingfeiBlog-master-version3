@@ -16,7 +16,16 @@ public class SecurityUtils
      **/
     public static LoginUser getLoginUser()
     {
-        return (LoginUser) getAuthentication().getPrincipal();
+//        return (LoginUser) getAuthentication().getPrincipal();
+        Object principal = null;
+        try{
+            principal = getAuthentication().getPrincipal();
+            LoginUser loginUser = (LoginUser) principal;
+            return loginUser;
+        }catch (Exception e){
+            System.out.println(e);
+        }
+        return null;
     }
 
     /**
@@ -32,6 +41,10 @@ public class SecurityUtils
     }
 
     public static Long getUserId() {
+        LoginUser loginUser = getLoginUser();
+        if(loginUser!=null)
+
         return getLoginUser().getUser().getId();
+        return -1L;
     }
 }

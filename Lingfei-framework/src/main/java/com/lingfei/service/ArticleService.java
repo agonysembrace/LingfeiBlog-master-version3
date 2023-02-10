@@ -31,5 +31,7 @@ public interface ArticleService extends IService<Article> {
     ArticleVo getInfo(Long id);
 
     void edit(ArticleDto article);
+
+    void updateViewCountToDB();
 }
 
