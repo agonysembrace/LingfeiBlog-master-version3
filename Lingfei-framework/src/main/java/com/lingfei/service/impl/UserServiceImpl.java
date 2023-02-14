@@ -67,13 +67,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Override
     public ResponseResult register(User user) {
         //对数据进行非空判断
-        if(StringUtils.hasText(user.getUserName()))
+        if(!StringUtils.hasText(user.getUserName()))
             throw new SystemException(AppHttpCodeEnum.USERNAME_NOT_NULL);
-        if(StringUtils.hasText(user.getPassword()))
+        if(!StringUtils.hasText(user.getPassword()))
             throw new SystemException(AppHttpCodeEnum.PASSWORD_NOT_NULL);
-        if(StringUtils.hasText(user.getEmail()))
+        if(!StringUtils.hasText(user.getEmail()))
             throw new SystemException(AppHttpCodeEnum.EMAIL_EXIST);
-        if(StringUtils.hasText(user.getNickName()))
+        if(!StringUtils.hasText(user.getNickName()))
             throw new SystemException(AppHttpCodeEnum.NICKNAME_NOT_NULL);
         //对数据进行查重判断
         if(userNameExist(user.getUserName())){
