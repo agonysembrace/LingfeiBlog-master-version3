@@ -23,7 +23,7 @@ public class SecurityUtils
             LoginUser loginUser = (LoginUser) principal;
             return loginUser;
         }catch (Exception e){
-            System.out.println(e);
+//            System.out.println(e);
         }
         return null;
     }

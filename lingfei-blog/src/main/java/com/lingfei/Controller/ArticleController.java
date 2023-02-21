@@ -4,7 +4,9 @@ import com.lingfei.domain.ResponseResult;
 import com.lingfei.domain.entity.Article;
 
 import com.lingfei.service.ArticleService;
+import io.swagger.annotations.Scope;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,7 +19,9 @@ import java.util.List;
  */
 
 @RestController
+//@Scope(name = ConfigurableBeanFactory.SCOPE_PROTOTYPE, description = "")
 @RequestMapping("/article")
+
 public class ArticleController {
 
     @Autowired
@@ -30,20 +34,20 @@ public class ArticleController {
 
     @GetMapping("/hotArticleList")
     public ResponseResult hotArticleList(){
-        articleService.updateViewCountToDB();
+//        articleService.updateViewCountToDB();
         ResponseResult result = articleService.hotArticle();
         return result;
     }
 
     @GetMapping("/articleList")
     public ResponseResult articleList(Integer pageNum,Integer pageSize,Long categoryId){
-        articleService.updateViewCountToDB();
+//        articleService.updateViewCountToDB();
         return articleService.articleList(pageNum,pageSize,categoryId);
     }
 
     @GetMapping("{id}")
     public ResponseResult getArticleDetail(@PathVariable("id")Long id){
-        articleService.updateViewCountToDB();
+//        articleService.updateViewCountToDB();
         return articleService.getArticleDetail(id);
     }
 

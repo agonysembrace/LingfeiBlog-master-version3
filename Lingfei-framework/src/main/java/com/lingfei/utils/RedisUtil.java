@@ -191,6 +191,18 @@ public final class RedisUtil {
         }
     }
 
+    public boolean myset(String key, Map<Long, Long> map) {
+        try {
+            redisTemplate.opsForHash().putAll(key, map);
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+
+
 
     /**
      * HashSet 并设置时间

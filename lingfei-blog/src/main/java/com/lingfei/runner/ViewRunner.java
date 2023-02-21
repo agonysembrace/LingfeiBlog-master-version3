@@ -39,12 +39,21 @@ public class ViewRunner implements CommandLineRunner {
         List<Article> articles = articleMapper.selectList(null);
         //查询出文章的访问量
         Map<String, Object> viewCountMap = articles.stream().collect(
-                Collectors.toMap(
-                        article -> article.getId().toString(),
-                        article -> article.getViewCount().intValue()
-                )
+
+        Collectors.toMap(
+                article -> article.getId().toString(),
+                article -> article.getViewCount().intValue()
+        )
         );
 //        redisCache.setCacheMap("article:viewCount",viewCountMap);
         redisUtil.hmset("article:viewCount",viewCountMap);
+//        Map<Long, Long> viewCountMap = articles.stream().collect(
+//                Collectors.toMap(
+//                        article -> article.getId(),
+//                        article -> article.getViewCount()
+//                )
+//        );
+//        redisUtil.myset("article:viewCount",viewCountMap);
+
     }
 }

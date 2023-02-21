@@ -1,0 +1,8 @@
+{
+  "properties": [
+    {
+      "name": "server.tomcat.max-t hreads",
+      "type": "java.lang.String",
+      "description": "Description for server.tomcat.max-t hreads."
+  }
+] }
