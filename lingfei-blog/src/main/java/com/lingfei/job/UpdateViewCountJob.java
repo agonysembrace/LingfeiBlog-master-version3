@@ -1,5 +1,6 @@
 package com.lingfei.job;
 
+import com.lingfei.cache.LRUCache;
 import com.lingfei.domain.entity.Article;
 import com.lingfei.service.ArticleService;
 import com.lingfei.utils.RedisCache;
@@ -55,5 +56,8 @@ public void updateViewCount(){
     //更新到数据库中
     articleService.updateBatchById(articles);
 
+    LRUCache lruCache = LRUCache.getInstance();
+    //清空缓存
+    lruCache.clear();
 }
 }

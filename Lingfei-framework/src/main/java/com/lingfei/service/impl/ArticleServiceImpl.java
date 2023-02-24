@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.lingfei.cache.LRUCache;
 import com.lingfei.config.FastJsonRedisSerializer;
 import com.lingfei.constants.SystemConstants;
 import com.lingfei.domain.ResponseResult;
@@ -17,25 +18,22 @@ import com.lingfei.mapper.ArticleMapper;
 import com.lingfei.service.ArticleService;
 import com.lingfei.service.ArticleTagService;
 import com.lingfei.service.CategoryService;
-import com.lingfei.utils.BeanCopyUtils;
-import com.lingfei.utils.CompressRedis;
-import com.lingfei.utils.RedisCache;
-import com.lingfei.utils.RedisUtil;
+import com.lingfei.utils.*;
 import io.swagger.annotations.Scope;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import redis.clients.jedis.Jedis;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import static com.lingfei.utils.CacheSingletonUtil.ARTICLE_DETALE_KEY;
 
 /**
  * 文章表(Article)表服务实现类
@@ -168,50 +166,64 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 //    articleDetailVo = (ArticleDetailVo) serializer.deserialize(s.getBytes(StandardCharsets.UTF_8));
 //    return ResponseResult.okResult(articleDetailVo);
 //}
+
 @Override
 public ResponseResult getArticleDetail(Long id) {
 
-        //Redis浏览量+1
-//        updateViewCount(id);
-    Jedis jedis = new Jedis("43.143.94.164", 6379);
-    jedis.auth("990313wlf");
-//    Object o = redisUtil.get("article:detail:"+id);
     Article article = null;
     ArticleDetailVo articleDetailVo = null;
-    String key = "article:detail:"+id;
-    //如果Redis中没有，就得去数据库里找
-    if(!redisUtil.hasKey(key)) {
-//        System.out.println("redis没找到该数据，开始在数据库中找数据");
-        article = getById(id);
-        //转换为Vo
-        articleDetailVo = BeanCopyUtils.copyBean(article, ArticleDetailVo.class);
-        //根据Id获取分类名
-        Long categoryId = articleDetailVo.getCategoryId();
-        Category category = categoryService.getById(categoryId);
-        if (category != null) {
-            articleDetailVo.setCategoryName(category.getName());
-        }
-
-
-        byte[] bytes = new CompressRedis().serialize(articleDetailVo);
-
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ObjectOutputStream oos = null;
-        try {
-            oos = new ObjectOutputStream(baos);
-            oos.writeObject(bytes);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        jedis.set(key.getBytes(), baos.toByteArray());
-        //关闭流
-        try {
-            oos.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    LRUCache lruCache = LRUCache.getInstance();
+    //如果JVM缓存中有，就直接返回
+    articleDetailVo = (ArticleDetailVo) lruCache.get(ARTICLE_DETALE_KEY+id);
+    if(articleDetailVo!=null){
+        return ResponseResult.okResult(articleDetailVo);
     }
+
+//    articleDetailVo  = (ArticleDetailVo) CacheSingletonUtil.getInstance().getCacheData(CacheSingletonUtil.ARTICLE_DETALE_KEY+id);
+//    if(articleDetailVo!=null){
+//        return ResponseResult.okResult(articleDetailVo);
+//    }
+
+        Jedis jedis = new Jedis("43.143.94.164", 6379);
+        jedis.auth("990313wlf");
+//    Object o = redisUtil.get("article:detail:"+id);
+
+        String key = "article:detail:" + id;
+        //如果Redis中没有，就得去数据库里找
+        if (!redisUtil.hasKey(key)) {
+//        System.out.println("redis没找到该数据，开始在数据库中找数据");
+            article = getById(id);
+            //转换为Vo
+            articleDetailVo = BeanCopyUtils.copyBean(article, ArticleDetailVo.class);
+            //根据Id获取分类名
+            Long categoryId = articleDetailVo.getCategoryId();
+            Category category = categoryService.getById(categoryId);
+            if (category != null) {
+                articleDetailVo.setCategoryName(category.getName());
+            }
+            byte[] bytes = new CompressRedis().serialize(articleDetailVo);
+
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            ObjectOutputStream oos = null;
+            try {
+                oos = new ObjectOutputStream(baos);
+                oos.writeObject(bytes);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            jedis.set(key.getBytes(), baos.toByteArray());
+            redisUtil.expire(Arrays.toString(key.getBytes()),120);
+
+
+
+            //关闭流
+            try {
+                oos.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
         // 读取 Byte格式 存入的数据
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(jedis.get(key.getBytes()));
         ObjectInputStream objectInputStream = null;
@@ -225,14 +237,17 @@ public ResponseResult getArticleDetail(Long id) {
             e.printStackTrace();
         }
         //解压数据
-    ArticleDetailVo vo = (ArticleDetailVo) new CompressRedis().deserialize(o);
+        articleDetailVo = (ArticleDetailVo) new CompressRedis().deserialize(o);
 
+        //同时应获取当前浏览量
+        Map<Object, Object> viewCount = redisUtil.hmget("article:viewCount");
+        Long l = ((Integer) viewCount.get(String.valueOf(id))).longValue();
+        articleDetailVo.setViewCount(l);
+        lruCache.put(ARTICLE_DETALE_KEY+id,articleDetailVo);
+//        CacheSingletonUtil.getInstance().addCacheData(CacheSingletonUtil.ARTICLE_DETALE_KEY+id, articleDetailVo);
 
-    Map<Object, Object> viewCount = redisUtil.hmget("article:viewCount");
-    Long l = ((Integer) viewCount.get(String.valueOf(id))).longValue();
-    vo.setViewCount(l);
-
-    return ResponseResult.okResult(vo);
+    redisUtil.expire("article:detail:"+id,99);
+    return ResponseResult.okResult(articleDetailVo);
 }
 
     @Override

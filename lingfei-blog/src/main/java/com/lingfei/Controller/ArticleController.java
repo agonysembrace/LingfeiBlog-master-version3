@@ -7,6 +7,7 @@ import com.lingfei.service.ArticleService;
 import io.swagger.annotations.Scope;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -44,7 +45,7 @@ public class ArticleController {
 //        articleService.updateViewCountToDB();
         return articleService.articleList(pageNum,pageSize,categoryId);
     }
-
+//    @Cacheable(cacheNames = "articleDetailCache")
     @GetMapping("{id}")
     public ResponseResult getArticleDetail(@PathVariable("id")Long id){
 //        articleService.updateViewCountToDB();

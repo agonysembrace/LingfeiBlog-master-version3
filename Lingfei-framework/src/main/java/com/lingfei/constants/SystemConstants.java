@@ -30,4 +30,8 @@ public class SystemConstants
     /** 正常状态 */
     public static final String NORMAL = "0";
     public static final String ADMAIN = "1";
+
+    public static final int LRU_MAX_SIZE = 3;
+
+    public static final String ARTICLE_DETAIL_KEY = "ARTICLE_DETAIL_KEY";
 }
